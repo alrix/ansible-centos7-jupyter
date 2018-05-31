@@ -1,0 +1,6 @@
+keystore_password_file: "/etc/pki/tls/private/server.pkcs12.pass"
+pkcs12_keystore_path: "/etc/pki/tls/certs/server.pkcs12"
+csr_path: "/etc/pki/tls/certs/{{ cert_cn }}.csr"
+x509_crt_path: "/etc/pki/tls/certs/server.crt"
+rsa_key_path: "/etc/pki/tls/private/server.key"
+

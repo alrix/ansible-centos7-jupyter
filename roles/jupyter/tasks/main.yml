@@ -1,0 +1,101 @@
+- name: Setup Jupyter user and group
+  become: yes
+  block:
+    - group:
+        name: jupyter
+        system: yes
+        state: present
+    - user:
+        name: jupyter
+        shell: /bin/bash
+        home: /var/lib/jupyter
+        system: yes
+
+- name: Copy Letsencrypt certs
+  become: yes
+  block:
+    - name: Create directory for storing certificates in
+      file:
+        dest: /etc/jupyter
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+    - name: Copy X509 Certificate
+      copy:
+        remote_src: yes
+        src: /etc/pki/tls/certs/{{ cert_cn }}.crt
+        dest: /etc/jupyter/server.crt
+        owner: jupyter
+        group: jupyter
+        mode: 0644
+    - name: Copy RSA Key
+      copy:
+        remote_src: yes
+        src: /etc/pki/tls/private/{{ cert_cn }}.key
+        dest: /etc/jupyter/server.key
+        owner: jupyter
+        group: jupyter
+        mode: 0400
+
+- name: Configure Jupyter Notebook Server
+  become: yes
+  block:
+    - name: Register hased password for jupyter
+      command: |
+        /opt/anaconda/bin/python \ 
+        -c "from IPython.lib import passwd; print(passwd('{{ notebook_password }}'))"
+      register: hashed_password
+    - name: Register keystore password fact
+      set_fact:
+        hashed_notebook_password: "{{ hashed_password.stdout }}"
+    - name: Create directory for Jupyter Notebook Config
+      file:
+        dest: /var/lib/jupyter/.jupyter
+        state: directory
+        owner: jupyter
+        group: jupyter
+        mode: 0755
+    - name: Main Jupyter Notebook Config
+      template:
+        src: jupyter_notebook_config.py
+        dest: /var/lib/jupyter/.jupyter/jupyter_notebook_config.py
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart jupyter notebook
+
+- name: Setup service scripts and other bits
+  become: yes
+  block:
+    - name: Setup systemd script
+      template:
+        src: jupyter-notebook.service
+        dest: /etc/systemd/system/jupyter-notebook.service
+        owner: root
+        group: root
+        mode: 0644
+      notify: systemctl daemon-reload
+    - name: Create jupyter postgres database
+      postgresql_db:
+        name: jupyter
+      become_user: postgres
+    - name: Configure jupyter postgres account
+      postgresql_user:
+        name: jupyter
+        role_attr_flags: CREATEDB,SUPERUSER
+      become_user: postgres
+    - name: Install post hook for letsencrypt renewal
+      copy:
+        src: 99-jupyter-post-hook.sh
+        dest: /etc/letsencrypt/renewal-hooks/post/99-jupyter-post-hook.sh
+        owner: root
+        group: root
+        mode: 0755
+
+- name: Install Jupyter
+  become: yes
+  conda:
+    name: jupyter
+    state: present
+    executable: /opt/anaconda/bin/conda

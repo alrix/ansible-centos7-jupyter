@@ -1,0 +1,101 @@
+- name: Install Certbot and Dependencies
+  become: yes
+  yum:
+    name: "{{ item }}" 
+    state: present
+  with_items:
+    - certbot
+
+- name: Create default directory for letsencrypt
+  become: yes
+  file:
+    dest: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Generate key, certificates, and corresponding PKCS12
+  become: yes
+  block: 
+    - name: Register certbot live status
+      stat: path="/etc/letsencrypt/live/{{ cert_cn }}/cert.pem"
+      register: certbot_live
+
+    - name: Use certbot to get a LetsEncrypt certificate
+      command: |
+        certbot certonly \
+        --register-unsafely-without-email \
+        -d {{ cert_cn }} \
+        --agree-tos \
+        --standalone
+      args:
+        chdir: /etc/letsencrypt
+      when: certbot_live.stat.exists == False
+
+    - name: "Copy Certificate to {{ x509_crt_path }}"
+      copy:
+        remote_src: yes
+        src: "/etc/letsencrypt/live/{{ cert_cn }}/fullchain.pem"
+        dest: "{{ x509_crt_path }}"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: "Copy Key to {{ rsa_key_path }}"
+      copy:
+        remote_src: yes
+        src: "/etc/letsencrypt/live/{{ cert_cn }}/privkey.pem"
+        dest: "{{ rsa_key_path }}"
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: Register password filestatus
+      stat: path="{{ keystore_password_file }}"
+      register: keystore_password_file_status
+    - name: Generate random password
+      set_fact: 
+        gen_rnd_pass: "{{ lookup('password', '/dev/null chars=ascii_letters') }}"
+      when: keystore_password_file_status.stat.exists == False
+    - name: Create keystore password file
+      copy:
+        content: "{{ gen_rnd_pass }}"
+        dest: "{{ keystore_password_file }}"
+        owner: root
+        group: root
+        mode: 0600
+      when: keystore_password_file_status.stat.exists == False
+    - name: Grab keystore password 
+      shell: "cat {{ keystore_password_file }}"
+      register: keystore_pass
+    - name: Register keystore password fact
+      set_fact: 
+        keystore_password: "{{ keystore_pass.stdout }}"
+
+    - name: "Create PKCS12 keystore {{ pkcs12_keystore_path }}" 
+      command: |
+        openssl pkcs12 -export  \
+        -in {{ x509_crt_path }} \
+        -inkey {{ rsa_key_path }} \
+        -out {{ pkcs12_keystore_path }} \
+        -name {{ cert_cn }} \
+        -password pass:{{ keystore_password }}
+      args:
+        creates: "{{ pkcs12_keystore_path }}"
+
+    - name: Create post-renew hook file for pkcs12 keystore"
+      template:
+        src: 01-renew-pkcs12.sh
+        dest: /etc/letsencrypt/renewal-hooks/post/01-renew-pkcs12-{{ cert_cn }}.sh
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: Create cron entry for certificate renewal
+      cron:
+        name: "Renew letsencrypt certs"
+        minute: "0"
+        hour: "9"
+        day: "1"
+        job: "certbot renew -q"

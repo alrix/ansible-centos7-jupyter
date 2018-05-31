@@ -1,0 +1,15 @@
+- name: Configures the backup server jobs and client definitions
+  hosts: all
+  become_method: sudo
+  become_user: root
+
+  roles: 
+    - epel
+    - denyhosts
+    - swapfile
+    - { role: datadog, tags: ['datadog'] }
+    - { role: postgresql10, tags: ['postgresql10'] }
+    - { role: anaconda3, tags: ['anaconda3'] }
+    - { role: letsencrypt, tags: ['letsencrypt'] }
+    - { role: jupyter, tags: ['jupyter'] }
+

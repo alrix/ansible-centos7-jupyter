@@ -1,0 +1,27 @@
+- name: Install datadog agent
+  become: yes
+  block:
+    - name: Setup datadog repo
+      copy:
+        src: datadog.repo
+        dest: /etc/yum.repos.d/datadog.repo
+        owner: root
+        group: root
+        mode: 0644
+    - name: Install datadog agent
+      yum:
+        name: datadog-agent
+        state: present
+    - name: Configure agent
+      template:
+        src: datadog.yaml
+        dest: /etc/datadog-agent/datadog.yaml
+        owner: root
+        group: root
+        mode: 0644
+    - name: Start and enable the datadog-agent.service
+      service:
+        name: datadog-agent.service
+        state: started
+        enabled: true
+

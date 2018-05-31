@@ -1,0 +1,13 @@
+- name: Install EPEL if not present
+  yum:
+    name: epel-release
+    state: present
+- name: Install Denyhosts package
+  yum:
+    name: denyhosts
+    state: present
+- name: Enable and start denyhosts
+  service:
+    name: denyhosts
+    state: started
+    enabled: true

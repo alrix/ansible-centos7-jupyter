@@ -1,0 +1,9 @@
+- name: systemctl daemon-reload
+  command: systemctl daemon-reload
+  become: yes
+
+- name: restart jupyter notebook
+  service:
+    name: jupyter-notebook
+    state: restarted
+  become: yes

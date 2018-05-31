@@ -1,0 +1,70 @@
+- name: Enable Postgresql 10 repo
+  become: yes
+  yum:
+    name: "{{ postgresql_repo_rpm }}"
+    state: present
+
+- name: Setup postgres
+  become: yes
+  block:
+    - name: Install postgres
+      yum:
+        name: "{{ item }}"
+        state: present
+        enablerepo: epel
+      with_items:
+        - python-psycopg2
+        - postgresql10-server
+        - postgresql10
+        - postgresql10-contrib
+        - postgis24_10
+    - name: stat state of db
+      stat:
+        path: /var/lib/pgsql/10/initdb.log
+      register: pgdata
+    - name: initialise db
+      command: /usr/pgsql-10/bin/postgresql-10-setup initdb
+      when: pgdata.stat.exists == False
+    - name: Start postgresql service
+      service:
+        name: postgresql-10.service
+        state: started
+        enabled: true
+    - name: stat state of postgres password
+      stat:
+        path: /root/.postgres_password_is_set
+      register: pgpassword
+    - name: Update postgres password
+      postgresql_user:
+        name: postgres
+        password: "{{ pg_password }}"
+        encrypted: yes
+      register: setpgpassword
+      become_user: postgres
+      when: pgpassword.stat.exists == False
+    - name: Touch pgpassword
+      file:
+        path: /root/.postgres_password_is_set
+        state: touch
+        mode: "u=rw,g=r,o=r"
+
+- name: Configure datadog to monitor postgres
+  become: yes
+  block:
+    - name: Configure datadog account
+      postgresql_user:
+        name: dd-agent
+        password: "{{ datadog_pg_password }}"
+        encrypted: yes
+        priv: CONNECT/pg_stat_database:SELECT
+        db: postgres
+      become_user: postgres
+    - name: Configure datadog
+      template:
+        src: datadog.yaml
+        dest: /etc/datadog-agent/conf.d/postgres.d/conf.yaml
+        owner: dd-agent
+        group: dd-agent
+        mode: 0644
+      notify: restart datadog-agent
+  

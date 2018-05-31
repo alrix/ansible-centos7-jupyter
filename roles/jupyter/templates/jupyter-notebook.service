@@ -1,0 +1,13 @@
+[Unit]
+Description=Service to run Jupyter Notebook
+Documentation=
+[Service]
+User=jupyter
+Group=jupyter
+Type=simple
+PIDFile=/run/jupyter
+WorkingDirectory=/var/lib/jupyter
+ExecStart=/opt/anaconda/bin/jupyter notebook
+ExecStop=/opt/anaconda/bin/jupyter notebook stop --port {{ jupyter_notebook_server_port }}
+[Install]
+WantedBy=multi-user.target

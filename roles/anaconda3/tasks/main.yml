@@ -1,0 +1,49 @@
+- name: Installing Anaconda Python
+  become: yes
+  block:
+    - name: Install depedencies
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - bzip2
+    - name: Determine installation status
+      stat: path=/opt/anaconda
+      register: anaconda_installed
+    - name: Download anaconda installer
+      get_url:
+        url: "{{ anaconda3_download_url }}"
+        dest: /var/tmp/install_anaconda.sh
+        mode: 0755
+      when: anaconda_installed.stat.exists == False
+    - name: Run anaconda installation script
+      shell: /var/tmp/install_anaconda.sh -b -p /opt/anaconda
+      args:
+        executable: /bin/bash
+        creates: /opt/anaconda
+
+- name: Update conda 
+  become: yes
+  block:
+    - name: Update conda base
+      shell: |
+        /opt/anaconda/bin/conda update -y -q -n base conda
+    - name: Update conda packages
+      shell: |
+        /opt/anaconda/bin/conda update -y -q --all
+
+- name: Install anaconda modules
+  become: yes
+  block:
+    - name: install datascience packages via conda
+      conda: 
+        name: "{{ item }}"
+        state: present
+        executable: /opt/anaconda/bin/conda
+      with_items:
+        - matplotlib
+        - numpy
+        - pandas
+        - plotly
+        - psycopg2
+        - zip

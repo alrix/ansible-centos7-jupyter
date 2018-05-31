@@ -1,0 +1,2 @@
+anaconda3_version: 5.1.0
+anaconda3_download_url: https://repo.continuum.io/archive/Anaconda3-{{ anaconda3_version }}-Linux-x86_64.sh

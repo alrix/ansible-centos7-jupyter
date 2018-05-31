@@ -1,0 +1,5 @@
+# Postgresql Settings
+pg_password: "{{ lookup('password', '/var/tmp/.pg_password chars=ascii_letters,digits') }}"
+datadog_pg_password: "{{ lookup('password', '/var/tmp/.datadog_pg_password chars=ascii_letters,digits') }}"
+postgresql_repo_rpm: https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-centos10-10-2.noarch.rpm
+

@@ -1,0 +1,3 @@
+jupyter_notebook_server_port: 8443
+juptyer_x509_crt_path: /etc/jupyter/server.crt
+jupyter_rsa_key_path: /etc/jupyter/server.key
