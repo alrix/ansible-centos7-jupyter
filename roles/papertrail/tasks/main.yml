@@ -1,0 +1,28 @@
+- name: Install papertrail certificate
+  become: yes
+  get_url:
+    url: https://papertrailapp.com/tools/papertrail-bundle.pem
+    dest: /etc/pki/tls/certs/papertrail-bundle.pem
+
+- name: Install TLS support for rsyslog
+  become: yes
+  yum: 
+    name: rsyslog-gnutls
+    state: present
+
+- name: Create papertrail service
+  become: yes
+  template:
+    src: papertrail.service
+    dest: /etc/systemd/system/papertrail.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable papertrail service
+  become: yes
+  service:
+    name: papertrail
+    state: started
+    enabled: true
+ 

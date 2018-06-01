@@ -1,0 +1,13 @@
+[Unit]
+Description=Papertrail
+After=systemd-journald.service
+Requires=systemd-journald.service
+
+[Service]
+ExecStart=/bin/sh -c "journalctl -f | socat - SSL:{{ papertrail_host }}:{{ papertrail_port }},cafile=/etc/pki/tls/certs/papertrail-bundle.pem"
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
