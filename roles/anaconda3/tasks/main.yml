@@ -41,11 +41,22 @@
         state: present
         executable: /opt/anaconda/bin/conda
       with_items:
-        - esri
-        - arcgis
         - matplotlib
         - numpy
         - pandas
-        - plotly
+        - plotlyb
         - psycopg2
         - zip
+
+- name: Install arcgis modules
+  become: yes
+  block:
+    - name: install datascience packages via conda
+      conda: 
+        name: "{{ item }}"
+        state: present
+        channel: esri
+        executable: /opt/anaconda/bin/conda
+      with_items:
+        - arcgis
+       
