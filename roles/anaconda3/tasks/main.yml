@@ -44,7 +44,7 @@
         - matplotlib
         - numpy
         - pandas
-        - plotlyb
+        - plotly
         - psycopg2
         - zip
 
