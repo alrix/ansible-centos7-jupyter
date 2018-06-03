@@ -5,6 +5,7 @@ This sets up:
 
 * Anaconda3 Python
 * Datadog Agent
+* Papertrail
 * Local instance of Postgreql10 Server
 * Jupyter Notebook Server secured with a LetsEncrypt certificate
 
@@ -20,4 +21,6 @@ ansible-playbook -u root -i <ip address>, jupyter.yml \
   -e datadog_api_key=EnterYourDatadogApiKeyHere \ 
   -e cert_cn=EnterYourLetsEncryptDomainHere \
   -e notebook_password=EnterThePasswordForYourJupyterNotebookHere
+  -e papertrail_host=EnterYourPapertrailHostHere \
+  -e papertrail_port=EnterYourPapertrailPortHere
 ```

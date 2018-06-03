@@ -24,7 +24,7 @@
     - name: Copy X509 Certificate
       copy:
         remote_src: yes
-        src: /etc/pki/tls/certs/{{ cert_cn }}.crt
+        src: /etc/pki/tls/certs/server.crt
         dest: /etc/jupyter/server.crt
         owner: jupyter
         group: jupyter
@@ -32,7 +32,7 @@
     - name: Copy RSA Key
       copy:
         remote_src: yes
-        src: /etc/pki/tls/private/{{ cert_cn }}.key
+        src: /etc/pki/tls/private/server.key
         dest: /etc/jupyter/server.key
         owner: jupyter
         group: jupyter
