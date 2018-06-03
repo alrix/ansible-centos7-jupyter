@@ -41,6 +41,8 @@
         state: present
         executable: /opt/anaconda/bin/conda
       with_items:
+        - esri
+        - arcgis
         - matplotlib
         - numpy
         - pandas
