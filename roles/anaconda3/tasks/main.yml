@@ -47,15 +47,11 @@
         - plotly
         - psycopg2
         - zip
-
-- name: Install arcgis modules
-  become: yes
-  block:
-    - name: install datascience packages via conda
+    - name: install arcgis packages via conda
       conda: 
         name: "{{ item }}"
         state: present
-        channel: esri
+        channels: esri
         executable: /opt/anaconda/bin/conda
       with_items:
         - arcgis
