@@ -109,3 +109,10 @@
     group: jupyter
     mode: 0644
   notify: restart jupyter notebook
+
+- name: Start and enable jupyter notebook service
+  become: yes
+  service:
+    name: jupyter-notebook
+    state: started
+    enabled: true
