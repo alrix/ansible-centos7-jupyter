@@ -3,3 +3,9 @@
   service:
     name: datadog-agent
     state: restarted
+
+- name: restart postgres
+  become: yes
+  service:
+    name: postgresql-10
+    state: restarted

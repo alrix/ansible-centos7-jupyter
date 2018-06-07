@@ -99,3 +99,13 @@
     name: jupyter
     state: present
     executable: /opt/anaconda/bin/conda
+
+- name: Configure Jupyter notebook extensions etc
+  become: yes
+  copy:
+    src: notebook.json
+    dest: /var/lib/jupyter/.jupyter/nbconfig/notebook.json
+    owner: jupyter
+    group: jupyter
+    mode: 0644
+  notify: restart jupyter notebook

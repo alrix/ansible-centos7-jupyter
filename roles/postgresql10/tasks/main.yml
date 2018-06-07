@@ -47,6 +47,14 @@
         path: /root/.postgres_password_is_set
         state: touch
         mode: "u=rw,g=r,o=r"
+    - name: Update access control
+      template:
+        src: pg_hba.conf
+        dest: /var/lib/pgsql/10/data/pg_hba.conf
+        owner: postgres
+        group: postgres
+        mode: 0600
+      notify: restart postgres
 
 - name: Configure datadog to monitor postgres
   become: yes

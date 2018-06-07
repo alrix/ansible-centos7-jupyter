@@ -1,0 +1,11 @@
+---
+
+- name: Creates a database user
+  hosts: all
+  tasks:
+    - name: Create a database user
+      become: yes
+      postgresql_user:
+        name: "{{ username }}"
+        role_attr_flags: CREATEDB,SUPERUSER
+      become_user: postgres
