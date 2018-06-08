@@ -41,6 +41,7 @@
         state: present
         executable: /opt/anaconda/bin/conda
       with_items:
+        - beautifulsoup4
         - matplotlib
         - numpy
         - pandas
@@ -55,4 +56,13 @@
         executable: /opt/anaconda/bin/conda
       with_items:
         - arcgis
+    - name: install conda-forge packages via conda
+      conda: 
+        name: "{{ item }}"
+        state: present
+        channels: conda-forge
+        executable: /opt/anaconda/bin/conda
+      with_items:
+        - folium
+       
        

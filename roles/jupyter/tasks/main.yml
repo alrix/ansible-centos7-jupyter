@@ -102,13 +102,22 @@
 
 - name: Configure Jupyter notebook extensions etc
   become: yes
-  copy:
-    src: notebook.json
-    dest: /var/lib/jupyter/.jupyter/nbconfig/notebook.json
-    owner: jupyter
-    group: jupyter
-    mode: 0644
-  notify: restart jupyter notebook
+  block:
+    - name: Setup nbconfig subdir
+      file:
+        dest: /var/lib/jupyter/.jupyter/nbconfig
+        state: directory
+        owner: jupyter
+        group: jupyter
+        mode: 0755
+    - name: Setup notebook config
+      copy:
+        src: notebook.json
+        dest: /var/lib/jupyter/.jupyter/nbconfig/notebook.json
+        owner: jupyter
+        group: jupyter
+        mode: 0644
+      notify: restart jupyter notebook
 
 - name: Start and enable jupyter notebook service
   become: yes
